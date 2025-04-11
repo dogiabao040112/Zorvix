@@ -4,7 +4,7 @@
 -- Tải UI Library MaruHub Style
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 local Window = OrionLib:MakeWindow({
-    Name = "Banana Cat Hub 🍌🐱 by Zorvix",
+    Name = "Banana Cat Hub 🍌🐱",
     HidePremium = false,
     SaveConfig = true,
     ConfigFolder = "BananaCatHub"
@@ -186,3 +186,5 @@ for _, skill in pairs({"Z", "X", "C", "V", "F"}) do
         end
     })
 end
+
+-- END UI SCRIPT - Các chức năng nâng cao sẽ tiếp tục được bổ sung!
