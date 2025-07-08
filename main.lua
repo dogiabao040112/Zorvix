@@ -1,4 +1,4 @@
---// Fly or Die GUI (No author label)
+--// Fly or Die GUI skibidiiiiiiiiiiiiiiiiiiiiiiiiiiiii
 
 local ScreenGui = Instance.new("ScreenGui")
 local Main = Instance.new("Frame")
