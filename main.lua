@@ -1,4 +1,4 @@
--- Fly or Die V2 (Nâng cấp)
+-- Fly or Die V2 - Fixed GUI Version
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -23,36 +23,27 @@ local flyDebounce = false
 local bodyVelocity, bodyGyro
 local flyConnection
 
--- Tạo GUI nâng cao
+-- Tạo GUI (Phiên bản đã fix hiển thị)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "FlyOrDieV2"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.DisplayOrder = 10  -- Đảm bảo hiển thị trên các GUI khác
 
+-- Main Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 350, 0, 250)
-MainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
-MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.Position = UDim2.new(0.5, -175, 0.1, 0)  -- Đặt ở phía trên màn hình
+MainFrame.AnchorPoint = Vector2.new(0.5, 0)
 MainFrame.BackgroundColor3 = mainColor
 MainFrame.BackgroundTransparency = 0.15
 MainFrame.BorderSizePixel = 0
 
+-- Thêm các thành phần GUI như trước...
 local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(0, 12)
 Corner.Parent = MainFrame
-
-local DropShadow = Instance.new("ImageLabel")
-DropShadow.Name = "DropShadow"
-DropShadow.Size = UDim2.new(1, 10, 1, 10)
-DropShadow.Position = UDim2.new(0, -5, 0, -5)
-DropShadow.BackgroundTransparency = 1
-DropShadow.Image = "rbxassetid://1316045217"
-DropShadow.ImageColor3 = Color3.new(0, 0, 0)
-DropShadow.ImageTransparency = 0.8
-DropShadow.ScaleType = Enum.ScaleType.Slice
-DropShadow.SliceCenter = Rect.new(10, 10, 118, 118)
-DropShadow.Parent = MainFrame
 
 -- Title
 local Title = Instance.new("TextLabel")
@@ -108,7 +99,6 @@ ToggleButton.AutoButtonColor = false
 local ToggleCorner = Instance.new("UICorner")
 ToggleCorner.CornerRadius = UDim.new(0, 8)
 ToggleCorner.Parent = ToggleButton
-
 ToggleButton.Parent = MainFrame
 
 -- Speed Controls
@@ -133,6 +123,7 @@ SpeedUpButton.TextSize = 14
 local SpeedUpCorner = Instance.new("UICorner")
 SpeedUpCorner.CornerRadius = UDim.new(0, 6)
 SpeedUpCorner.Parent = SpeedUpButton
+SpeedUpButton.Parent = SpeedControls
 
 -- Speed Down Button
 local SpeedDownButton = Instance.new("TextButton")
@@ -149,84 +140,23 @@ SpeedDownButton.TextSize = 14
 local SpeedDownCorner = Instance.new("UICorner")
 SpeedDownCorner.CornerRadius = UDim.new(0, 6)
 SpeedDownCorner.Parent = SpeedDownButton
-
--- Mobile Controls (for touch devices)
-local MobileControls = Instance.new("Frame")
-MobileControls.Name = "MobileControls"
-MobileControls.Size = UDim2.new(1, -20, 0, 35)
-MobileControls.Position = UDim2.new(0, 10, 0, 45)
-MobileControls.BackgroundTransparency = 1
-MobileControls.Visible = false -- Will be set based on device
-
-local UpButton = Instance.new("TextButton")
-UpButton.Name = "UpButton"
-UpButton.Size = UDim2.new(0.5, -5, 1, 0)
-UpButton.Position = UDim2.new(0, 0, 0, 0)
-UpButton.BackgroundColor3 = mainColor
-UpButton.BackgroundTransparency = 0.3
-UpButton.Text = "LÊN"
-UpButton.TextColor3 = secondaryColor
-UpButton.Font = Enum.Font.GothamBold
-UpButton.TextSize = 14
-
-local UpCorner = Instance.new("UICorner")
-UpCorner.CornerRadius = UDim.new(0, 6)
-UpCorner.Parent = UpButton
-
-local DownButton = Instance.new("TextButton")
-DownButton.Name = "DownButton"
-DownButton.Size = UDim2.new(0.5, -5, 1, 0)
-DownButton.Position = UDim2.new(0.5, 5, 0, 0)
-DownButton.BackgroundColor3 = mainColor
-DownButton.BackgroundTransparency = 0.3
-DownButton.Text = "XUỐNG"
-DownButton.TextColor3 = secondaryColor
-DownButton.Font = Enum.Font.GothamBold
-DownButton.TextSize = 14
-
-local DownCorner = Instance.new("UICorner")
-DownCorner.CornerRadius = UDim.new(0, 6)
-DownCorner.Parent = DownButton
-
--- Add elements to parents
-SpeedUpButton.Parent = SpeedControls
 SpeedDownButton.Parent = SpeedControls
-UpButton.Parent = MobileControls
-DownButton.Parent = MobileControls
-MobileControls.Parent = MainFrame
+
+-- Thêm các controls vào MainFrame
 SpeedControls.Parent = MainFrame
-ScreenGui.Parent = player:WaitForChild("PlayerGui")
+MainFrame.Parent = ScreenGui
 
--- Detect if on mobile
-if UserInputService.TouchEnabled then
-    MobileControls.Visible = true
-    SpeedControls.Position = UDim2.new(0, 10, 0, 190)
+-- Đảm bảo GUI được parent đúng cách
+local function ensureGui()
+    if not player:FindFirstChild("PlayerGui") then
+        player:WaitForChild("PlayerGui")
+    end
+    ScreenGui.Parent = player.PlayerGui
 end
 
--- Animation functions
-local function animateButton(button)
-    local originalSize = button.Size
-    local originalPos = button.Position
-    
-    local tweenIn = TweenService:Create(
-        button,
-        TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-        {Size = originalSize - UDim2.new(0, 10, 0, 5), Position = originalPos + UDim2.new(0, 5, 0, 2.5)}
-    )
-    
-    local tweenOut = TweenService:Create(
-        button,
-        TweenInfo.new(0.1, Enum.EasingStyle.Bounce, Enum.EasingDirection.Out),
-        {Size = originalSize, Position = originalPos}
-    )
-    
-    tweenIn:Play()
-    tweenIn.Completed:Connect(function()
-        tweenOut:Play()
-    end)
-end
+ensureGui()
 
--- Flight system
+-- Các hàm bay và sự kiện như trước...
 local function enableFlight()
     if flyDebounce then return end
     flyDebounce = true
@@ -238,7 +168,6 @@ local function enableFlight()
     ToggleButton.BackgroundColor3 = warningColor
     humanoid.PlatformStand = true
     
-    -- Create physics objects
     bodyVelocity = Instance.new("BodyVelocity")
     bodyVelocity.Velocity = Vector3.new(0, 0, 0)
     bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
@@ -251,7 +180,6 @@ local function enableFlight()
     bodyGyro.D = 500
     bodyGyro.Parent = rootPart
     
-    -- Flight connection
     flyConnection = RunService.Heartbeat:Connect(function(dt)
         if not flying or not character:FindFirstChild("HumanoidRootPart") then
             flyConnection:Disconnect()
@@ -261,7 +189,6 @@ local function enableFlight()
         local camera = workspace.CurrentCamera
         local direction = Vector3.new()
         
-        -- Keyboard controls
         if UserInputService:IsKeyDown(Enum.KeyCode.W) then
             direction = direction + (camera.CFrame.LookVector * flySpeed)
         end
@@ -275,15 +202,6 @@ local function enableFlight()
             direction = direction + (camera.CFrame.RightVector * flySpeed)
         end
         
-        -- Mobile controls
-        if UpButton:IsActive() then
-            direction = direction + (Vector3.new(0, 1, 0) * flySpeed
-        end
-        if DownButton:IsActive() then
-            direction = direction - (Vector3.new(0, 1, 0) * flySpeed
-        end
-        
-        -- Apply movement
         bodyVelocity.Velocity = direction
         bodyGyro.CFrame = CFrame.new(rootPart.Position, rootPart.Position + camera.CFrame.LookVector)
     end)
@@ -325,25 +243,18 @@ local function toggleFlight()
     end
 end
 
--- Button events
-ToggleButton.MouseButton1Click:Connect(function()
-    animateButton(ToggleButton)
-    toggleFlight()
-end)
-
+-- Kết nối sự kiện nút
+ToggleButton.MouseButton1Click:Connect(toggleFlight)
 SpeedUpButton.MouseButton1Click:Connect(function()
-    animateButton(SpeedUpButton)
     flySpeed = math.min(flySpeed + 5, 100)
     SpeedDisplay.Text = "SPEED: " .. flySpeed
 end)
-
 SpeedDownButton.MouseButton1Click:Connect(function()
-    animateButton(SpeedDownButton)
     flySpeed = math.max(flySpeed - 5, 10)
     SpeedDisplay.Text = "SPEED: " .. flySpeed
 end)
 
--- Keyboard events
+-- Kết nối sự kiện bàn phím
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
@@ -358,20 +269,16 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Auto-disable flight when character dies
-character:WaitForChild("Humanoid").Died:Connect(function()
-    disableFlight()
-end)
+-- Tự động tắt khi nhân vật chết
+humanoid.Died:Connect(disableFlight)
 
--- Reconnect flight when character respawns
+-- Xử lý respawn
 player.CharacterAdded:Connect(function(newChar)
     character = newChar
     humanoid = character:WaitForChild("Humanoid")
     rootPart = character:WaitForChild("HumanoidRootPart")
     
-    humanoid.Died:Connect(function()
-        disableFlight()
-    end)
+    humanoid.Died:Connect(disableFlight)
     
     if flying then
         disableFlight()
@@ -379,18 +286,10 @@ player.CharacterAdded:Connect(function(newChar)
     end
 end)
 
--- GUI effects
-local pulseSpeed = 1.5
-local pulseAmount = 0.03
-local initialSize = MainFrame.Size
-
+-- Hiệu ứng GUI
 RunService.Heartbeat:Connect(function(dt)
-    local pulse = math.sin(tick() * pulseSpeed) * pulseAmount
-    MainFrame.Size = initialSize + UDim2.new(0, pulse * initialSize.X.Offset, 0, pulse * initialSize.Y.Offset)
-    
-    -- Smooth color pulse effect
-    local colorPulse = math.sin(tick() * 0.8) * 0.03
-    MainFrame.BackgroundColor3 = mainColor:lerp(secondaryColor, math.abs(colorPulse))
+    local pulse = math.sin(tick()) * 0.01
+    MainFrame.Size = UDim2.new(0, 350 + pulse * 350, 0, 250 + pulse * 250)
 end)
 
-print("Nhìn cl")
+print("l me may")
