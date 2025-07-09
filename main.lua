@@ -1,164 +1,173 @@
--- Fly or Die V2 (FIXED CONTROLS)
-local Player = game:GetService("Players").LocalPlayer
+local Plr = game:GetService("Players").LocalPlayer
+local Camera = game:GetService("Workspace").CurrentCamera
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
--- Đợi nhân vật spawn
-local Character = Player.Character or Player.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
-local RootPart = Character:WaitForChild("HumanoidRootPart")
-
--- Cấu hình bay
-local flySpeed = 50
+-- Cài đặt ban đầu
+local Speed = 50
 local isFlying = false
-local flyConnection
+local FlyForce
+local HRP
 
--- Hàm tạo hiệu ứng bay chuyên nghiệp
+-- Tạo GUI
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local ToggleButton = Instance.new("TextButton")
+local SpeedLabel = Instance.new("TextLabel")
+local SpeedBox = Instance.new("TextBox")
+local StatusLabel = Instance.new("TextLabel")
+
+ScreenGui.Name = "FlyControl"
+ScreenGui.Parent = game:GetService("CoreGui")
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderColor3 = Color3.fromRGB(0, 150, 150)
+MainFrame.Position = UDim2.new(0.8, 0, 0.5, -75)
+MainFrame.Size = UDim2.new(0, 150, 0, 150)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(0, 100, 100)
+Title.Size = UDim2.new(0, 150, 0, 30)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "FLY CONTROL"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 14.000
+
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = MainFrame
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 80, 80)
+ToggleButton.Position = UDim2.new(0.1, 0, 0.25, 0)
+ToggleButton.Size = UDim2.new(0, 120, 0, 40)
+ToggleButton.Font = Enum.Font.Gotham
+ToggleButton.Text = "BẬT FLY"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 14.000
+
+SpeedLabel.Name = "SpeedLabel"
+SpeedLabel.Parent = MainFrame
+SpeedLabel.BackgroundTransparency = 1.000
+SpeedLabel.Position = UDim2.new(0.1, 0, 0.6, 0)
+SpeedLabel.Size = UDim2.new(0, 50, 0, 20)
+SpeedLabel.Font = Enum.Font.Gotham
+SpeedLabel.Text = "Tốc độ:"
+SpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedLabel.TextSize = 12.000
+SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+SpeedBox.Name = "SpeedBox"
+SpeedBox.Parent = MainFrame
+SpeedBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+SpeedBox.Position = UDim2.new(0.5, 0, 0.6, 0)
+SpeedBox.Size = UDim2.new(0, 50, 0, 20)
+SpeedBox.Font = Enum.Font.Gotham
+SpeedBox.Text = tostring(Speed)
+SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedBox.TextSize = 12.000
+
+StatusLabel.Name = "StatusLabel"
+StatusLabel.Parent = MainFrame
+StatusLabel.BackgroundTransparency = 1.000
+StatusLabel.Position = UDim2.new(0.1, 0, 0.8, 0)
+StatusLabel.Size = UDim2.new(0, 120, 0, 20)
+StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.Text = "Trạng thái: TẮT"
+StatusLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+StatusLabel.TextSize = 12.000
+
+-- Hàm bật fly
 local function StartFly()
     if isFlying then return end
     
+    -- Đảm bảo nhân vật tồn tại
+    if not Plr.Character then
+        Plr.CharacterAdded:Wait()
+    end
+    HRP = Plr.Character:WaitForChild("HumanoidRootPart")
+    
+    -- Tạo lực bay
+    FlyForce = Instance.new("BodyVelocity")
+    FlyForce.Parent = HRP
+    FlyForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    FlyForce.Velocity = Vector3.new()
+    
+    -- Tắt trọng lực
+    HRP:FindFirstChildOfClass("BodyForce"):Destroy()
+    
     isFlying = true
-    Humanoid.PlatformStand = true
-    
-    -- Tạo các bộ phận vật lý
-    local AlignPos = Instance.new("AlignPosition")
-    local AlignGyro = Instance.new("AlignOrientation")
-    local BodyGyro = Instance.new("BodyGyro")
-    
-    -- Cấu hình AlignPosition
-    AlignPos.Parent = RootPart
-    AlignPos.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-    AlignPos.Responsiveness = 200
-    
-    -- Cấu hình AlignOrientation
-    AlignGyro.Parent = RootPart
-    AlignGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-    AlignGyro.Responsiveness = 200
-    
-    -- Cấu hình BodyGyro
-    BodyGyro.Parent = RootPart
-    BodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    ToggleButton.Text = "TẮT FLY"
+    StatusLabel.Text = "Trạng thái: BẬT"
+    StatusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
     
     -- Kết nối sự kiện bay
-    flyConnection = RunService.Heartbeat:Connect(function()
-        if not isFlying or not Character:FindFirstChild("HumanoidRootPart") then return end
+    local GetMoveVector = require(Plr:WaitForChild("PlayerScripts").PlayerModule:WaitForChild("ControlModule"))
+    
+    RunService.RenderStepped:Connect(function()
+        if not isFlying or not HRP or not FlyForce then return end
         
-        -- Xử lý hướng bay
-        local moveDirection = Vector3.new()
-        local cframe = RootPart.CFrame
+        FlyForce.Velocity = Vector3.new()
+        local MoveDir = GetMoveVector:GetMoveVector()
         
-        -- Điều khiển WASD
-        if UIS:IsKeyDown(Enum.KeyCode.W) then
-            moveDirection = moveDirection + cframe.LookVector
+        -- Xử lý di chuyển theo camera
+        if MoveDir.X ~= 0 then
+            FlyForce.Velocity = FlyForce.Velocity + Camera.CFrame.RightVector * MoveDir.X * Speed
         end
-        if UIS:IsKeyDown(Enum.KeyCode.S) then
-            moveDirection = moveDirection - cframe.LookVector
-        end
-        if UIS:IsKeyDown(Enum.KeyCode.A) then
-            moveDirection = moveDirection - cframe.RightVector
-        end
-        if UIS:IsKeyDown(Enum.KeyCode.D) then
-            moveDirection = moveDirection + cframe.RightVector
+        if MoveDir.Z ~= 0 then
+            FlyForce.Velocity = FlyForce.Velocity - Camera.CFrame.LookVector * MoveDir.Z * Speed
         end
         
-        -- Điều khiển lên/xuống (Space/Ctrl)
+        -- Xử lý bay lên/xuống
         if UIS:IsKeyDown(Enum.KeyCode.Space) then
-            moveDirection = moveDirection + Vector3.new(0, 1, 0)
+            FlyForce.Velocity = FlyForce.Velocity + Vector3.new(0, Speed, 0)
         elseif UIS:IsKeyDown(Enum.KeyCode.LeftControl) then
-            moveDirection = moveDirection + Vector3.new(0, -1, 0)
+            FlyForce.Velocity = FlyForce.Velocity + Vector3.new(0, -Speed, 0)
         end
-        
-        -- Chuẩn hóa hướng và áp dụng tốc độ
-        if moveDirection.Magnitude > 0 then
-            moveDirection = moveDirection.Unit * flySpeed
-        end
-        
-        -- Cập nhật vị trí
-        AlignPos.Position = RootPart.Position + moveDirection
-        BodyGyro.CFrame = cframe
     end)
 end
 
--- Hàm dừng bay
+-- Hàm tắt fly
 local function StopFly()
     if not isFlying then return end
     
     isFlying = false
-    Humanoid.PlatformStand = false
+    if FlyForce then FlyForce:Destroy() end
     
-    if flyConnection then
-        flyConnection:Disconnect()
+    -- Khôi phục trọng lực
+    if HRP then
+        local BodyForce = Instance.new("BodyForce")
+        BodyForce.Parent = HRP
+        BodyForce.Force = Vector3.new(0, HRP:GetMass() * workspace.Gravity, 0)
     end
     
-    -- Dọn dẹp các Instance
-    for _, obj in ipairs(RootPart:GetChildren()) do
-        if obj:IsA("AlignPosition") or obj:IsA("AlignOrientation") or obj:IsA("BodyGyro") then
-            obj:Destroy()
-        end
-    end
-end
-
--- GUI điều khiển đơn giản
-local function CreateFlyGUI()
-    local ScreenGui = Instance.new("ScreenGui")
-    local Frame = Instance.new("Frame")
-    local ToggleButton = Instance.new("TextButton")
-    local SpeedLabel = Instance.new("TextLabel")
-    local SpeedBox = Instance.new("TextBox")
-    
-    -- Cấu hình GUI
-    ScreenGui.Parent = game:GetService("CoreGui")
-    
-    Frame.Size = UDim2.new(0, 200, 0, 120)
-    Frame.Position = UDim2.new(0.5, -100, 0.5, -60)
-    Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    Frame.Parent = ScreenGui
-    
-    ToggleButton.Size = UDim2.new(0, 180, 0, 40)
-    ToggleButton.Position = UDim2.new(0.1, 0, 0.1, 0)
     ToggleButton.Text = "BẬT FLY"
-    ToggleButton.Parent = Frame
-    
-    SpeedLabel.Size = UDim2.new(0, 80, 0, 30)
-    SpeedLabel.Position = UDim2.new(0.1, 0, 0.5, 0)
-    SpeedLabel.Text = "Tốc độ:"
-    SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-    SpeedLabel.Parent = Frame
-    
-    SpeedBox.Size = UDim2.new(0, 80, 0, 30)
-    SpeedBox.Position = UDim2.new(0.55, 0, 0.5, 0)
-    SpeedBox.Text = tostring(flySpeed)
-    SpeedBox.Parent = Frame
-    
-    -- Xử lý sự kiện
-    ToggleButton.MouseButton1Click:Connect(function()
-        if isFlying then
-            StopFly()
-            ToggleButton.Text = "BẬT FLY"
-        else
-            StartFly()
-            ToggleButton.Text = "TẮT FLY"
-        end
-    end)
-    
-    SpeedBox.FocusLost:Connect(function()
-        local newSpeed = tonumber(SpeedBox.Text)
-        if newSpeed and newSpeed > 0 then
-            flySpeed = newSpeed
-        else
-            SpeedBox.Text = tostring(flySpeed)
-        end
-    end)
+    StatusLabel.Text = "Trạng thái: TẮT"
+    StatusLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 end
 
--- Tự động reset khi nhân vật chết
-Player.CharacterAdded:Connect(function(newChar)
-    Character = newChar
-    Humanoid = newChar:WaitForChild("Humanoid")
-    RootPart = newChar:WaitForChild("HumanoidRootPart")
-    
-    Humanoid.Died:Connect(StopFly)
+-- Xử lý sự kiện GUI
+ToggleButton.MouseButton1Click:Connect(function()
+    if isFlying then
+        StopFly()
+    else
+        StartFly()
+    end
 end)
 
--- Khởi tạo GUI
-CreateFlyGUI()
+SpeedBox.FocusLost:Connect(function()
+    local newSpeed = tonumber(SpeedBox.Text)
+    if newSpeed and newSpeed > 0 then
+        Speed = newSpeed
+    else
+        SpeedBox.Text = tostring(Speed)
+    end
+end)
+
+-- Tự động dừng khi nhân vật chết
+Plr.CharacterAdded:Connect(function(char)
+    char:WaitForChild("Humanoid").Died:Connect(StopFly)
+end)
