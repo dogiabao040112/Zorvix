@@ -8,6 +8,10 @@ local Speed = 50
 local isFlying = false
 local FlyForce
 local HRP
+local originalGravity
+
+-- Lưu trữ gravity gốc
+originalGravity = workspace.Gravity
 
 -- Tạo GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -90,14 +94,14 @@ local function StartFly()
     end
     HRP = Plr.Character:WaitForChild("HumanoidRootPart")
     
+    -- Tắt gravity để loại bỏ hiệu ứng rơi
+    workspace.Gravity = 0
+    
     -- Tạo lực bay
     FlyForce = Instance.new("BodyVelocity")
     FlyForce.Parent = HRP
     FlyForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
     FlyForce.Velocity = Vector3.new()
-    
-    -- Tắt trọng lực
-    HRP:FindFirstChildOfClass("BodyForce"):Destroy()
     
     isFlying = true
     ToggleButton.Text = "TẮT FLY"
@@ -137,12 +141,8 @@ local function StopFly()
     isFlying = false
     if FlyForce then FlyForce:Destroy() end
     
-    -- Khôi phục trọng lực
-    if HRP then
-        local BodyForce = Instance.new("BodyForce")
-        BodyForce.Parent = HRP
-        BodyForce.Force = Vector3.new(0, HRP:GetMass() * workspace.Gravity, 0)
-    end
+    -- Khôi phục gravity gốc
+    workspace.Gravity = originalGravity
     
     ToggleButton.Text = "BẬT FLY"
     StatusLabel.Text = "Trạng thái: TẮT"
