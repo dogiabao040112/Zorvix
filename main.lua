@@ -1,22 +1,23 @@
--- Fly or Die V2 - Universal Version (PC + Mobile)
+-- Fly or Die V2 - Complete Fixed Script
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
+-- Player setup
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
--- Color scheme
+-- Colors
 local mainColor = Color3.fromRGB(10, 100, 200)
 local secondaryColor = Color3.fromRGB(255, 255, 255)
 local accentColor = Color3.fromRGB(255, 100, 50)
 local successColor = Color3.fromRGB(50, 255, 50)
 local warningColor = Color3.fromRGB(255, 150, 50)
 
--- System variables
+-- Flight system
 local flying = false
 local flySpeed = 50
 local flyDebounce = false
@@ -43,13 +44,109 @@ local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(0, 12)
 Corner.Parent = MainFrame
 
--- [Previous GUI elements remain the same...]
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, -20, 0, 40)
+Title.Position = UDim2.new(0, 10, 0, 10)
+Title.BackgroundTransparency = 1
+Title.Text = "FLY OR DIE V2"
+Title.TextColor3 = secondaryColor
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 24
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = MainFrame
 
--- Mobile controls
+-- Status
+local Status = Instance.new("TextLabel")
+Status.Name = "Status"
+Status.Size = UDim2.new(0.5, -15, 0, 30)
+Status.Position = UDim2.new(0, 10, 0, 50)
+Status.BackgroundTransparency = 1
+Status.Text = "STATUS: OFF"
+Status.TextColor3 = warningColor
+Status.Font = Enum.Font.GothamBold
+Status.TextSize = 16
+Status.TextXAlignment = Enum.TextXAlignment.Left
+Status.Parent = MainFrame
+
+-- Speed Display
+local SpeedDisplay = Instance.new("TextLabel")
+SpeedDisplay.Name = "SpeedDisplay"
+SpeedDisplay.Size = UDim2.new(0.5, -15, 0, 30)
+SpeedDisplay.Position = UDim2.new(0.5, 5, 0, 50)
+SpeedDisplay.BackgroundTransparency = 1
+SpeedDisplay.Text = "SPEED: " .. flySpeed
+SpeedDisplay.TextColor3 = secondaryColor
+SpeedDisplay.Font = Enum.Font.GothamBold
+SpeedDisplay.TextSize = 16
+SpeedDisplay.TextXAlignment = Enum.TextXAlignment.Right
+SpeedDisplay.Parent = MainFrame
+
+-- Toggle Button
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Size = UDim2.new(1, -20, 0, 40)
+ToggleButton.Position = UDim2.new(0, 10, 0, 90)
+ToggleButton.BackgroundColor3 = accentColor
+ToggleButton.Text = "BẬT BAY"
+ToggleButton.TextColor3 = secondaryColor
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 18
+ToggleButton.AutoButtonColor = false
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 8)
+ToggleCorner.Parent = ToggleButton
+ToggleButton.Parent = MainFrame
+
+-- Speed Controls
+local SpeedControls = Instance.new("Frame")
+SpeedControls.Name = "SpeedControls"
+SpeedControls.Size = UDim2.new(1, -20, 0, 80)
+SpeedControls.Position = UDim2.new(0, 10, 0, 140)
+SpeedControls.BackgroundTransparency = 1
+
+-- Speed Up Button
+local SpeedUpButton = Instance.new("TextButton")
+SpeedUpButton.Name = "SpeedUpButton"
+SpeedUpButton.Size = UDim2.new(0.5, -5, 0, 35)
+SpeedUpButton.Position = UDim2.new(0, 0, 0, 0)
+SpeedUpButton.BackgroundColor3 = mainColor
+SpeedUpButton.BackgroundTransparency = 0.3
+SpeedUpButton.Text = "TĂNG TỐC (+)"
+SpeedUpButton.TextColor3 = secondaryColor
+SpeedUpButton.Font = Enum.Font.Gotham
+SpeedUpButton.TextSize = 14
+
+local SpeedUpCorner = Instance.new("UICorner")
+SpeedUpCorner.CornerRadius = UDim.new(0, 6)
+SpeedUpCorner.Parent = SpeedUpButton
+SpeedUpButton.Parent = SpeedControls
+
+-- Speed Down Button
+local SpeedDownButton = Instance.new("TextButton")
+SpeedDownButton.Name = "SpeedDownButton"
+SpeedDownButton.Size = UDim2.new(0.5, -5, 0, 35)
+SpeedDownButton.Position = UDim2.new(0.5, 5, 0, 0)
+SpeedDownButton.BackgroundColor3 = mainColor
+SpeedDownButton.BackgroundTransparency = 0.3
+SpeedDownButton.Text = "GIẢM TỐC (-)"
+SpeedDownButton.TextColor3 = secondaryColor
+SpeedDownButton.Font = Enum.Font.Gotham
+SpeedDownButton.TextSize = 14
+
+local SpeedDownCorner = Instance.new("UICorner")
+SpeedDownCorner.CornerRadius = UDim.new(0, 6)
+SpeedDownCorner.Parent = SpeedDownButton
+SpeedDownButton.Parent = SpeedControls
+SpeedControls.Parent = MainFrame
+
+-- Mobile Controls
 local MobileControls = Instance.new("Frame")
 MobileControls.Name = "MobileControls"
 MobileControls.Size = UDim2.new(1, -20, 0, 100)
-MobileControls.Position = UDim2.new(0, 10, 0, 140)
+MobileControls.Position = UDim2.new(0, 10, 0, 190)
 MobileControls.BackgroundTransparency = 1
 MobileControls.Visible = UserInputService.TouchEnabled
 
@@ -81,15 +178,10 @@ UpButton.Parent = MobileControls
 DownButton.Parent = MobileControls
 MobileControls.Parent = MainFrame
 
--- Ensure GUI is parented correctly
-local function ensureGui()
-    repeat task.wait() until player:FindFirstChild("PlayerGui")
-    ScreenGui.Parent = player.PlayerGui
-end
+-- Parent GUI
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
-ensureGui()
-
--- Improved flight system
+-- Flight Functions
 local function enableFlight()
     if flyDebounce or not character or not rootPart then return end
     flyDebounce = true
@@ -105,9 +197,9 @@ local function enableFlight()
     if bodyVelocity then bodyVelocity:Destroy() end
     if bodyGyro then bodyGyro:Destroy() end
     
-    -- Create new physics objects
+    -- Create physics objects
     bodyVelocity = Instance.new("BodyVelocity")
-    bodyVelocity.Velocity = Vector3.new(0, 0.1, 0) -- Small initial velocity
+    bodyVelocity.Velocity = Vector3.new(0, 0.1, 0)
     bodyVelocity.MaxForce = Vector3.new(40000, 40000, 40000)
     bodyVelocity.P = 1250
     bodyVelocity.Parent = rootPart
@@ -119,7 +211,7 @@ local function enableFlight()
     bodyGyro.CFrame = rootPart.CFrame
     bodyGyro.Parent = rootPart
     
-    -- Flight control connection
+    -- Flight control
     if flyConnection then flyConnection:Disconnect() end
     flyConnection = RunService.Heartbeat:Connect(function(dt)
         if not flying or not character or not rootPart or not bodyVelocity or not bodyGyro then
@@ -132,7 +224,7 @@ local function enableFlight()
         
         local direction = Vector3.new()
         local cf = camera.CFrame
-        local lookVector = Vector3.new(cf.LookVector.X, 0, cf.LookVector.Z).Unit -- Flattened look vector
+        local lookVector = Vector3.new(cf.LookVector.X, 0, cf.LookVector.Z).Unit
         local rightVector = cf.RightVector
         
         -- Keyboard controls
@@ -238,4 +330,4 @@ RunService.Heartbeat:Connect(function(dt)
     MainFrame.Size = UDim2.new(0, 350 * (1 + pulse), 0, 250 * (1 + pulse))
 end)
 
-print(Nhin vao cai nay la gay)
+print("Fly or Die V2 đã sẵn sàng hoạt động!")
