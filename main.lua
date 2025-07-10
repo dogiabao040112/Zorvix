@@ -10,75 +10,92 @@ local FlyForce
 local HRP
 local flyConnection
 
--- Tạo GUI cao cấp
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "FlyOrDieV2"
-ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- Tạo GUI đảm bảo hiển thị
+local function CreateGUI()
+    -- Kiểm tra và xóa GUI cũ nếu tồn tại
+    local CoreGui = game:GetService("CoreGui")
+    if CoreGui:FindFirstChild("FlyOrDieV2") then
+        CoreGui.FlyOrDieV2:Destroy()
+    end
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-MainFrame.BorderColor3 = Color3.fromRGB(0, 200, 150)
-MainFrame.Position = UDim2.new(0.8, -175, 0.5, -100)
-MainFrame.Size = UDim2.new(0, 200, 0, 180)
-MainFrame.Active = true
-MainFrame.Draggable = true
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "FlyOrDieV2"
+    ScreenGui.Parent = CoreGui
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-local Title = Instance.new("TextLabel")
-Title.Name = "Title"
-Title.Parent = MainFrame
-Title.BackgroundColor3 = Color3.fromRGB(0, 120, 90)
-Title.Size = UDim2.new(0, 200, 0, 30)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "FLY OR DIE V2"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 14
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Parent = ScreenGui
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    MainFrame.BorderColor3 = Color3.fromRGB(0, 200, 150)
+    MainFrame.Position = UDim2.new(0.8, -175, 0.5, -100)
+    MainFrame.Size = UDim2.new(0, 200, 0, 180)
+    MainFrame.Active = true
+    MainFrame.Draggable = true
 
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Name = "ToggleBtn"
-ToggleBtn.Parent = MainFrame
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 80)
-ToggleBtn.Position = UDim2.new(0.1, 0, 0.25, 0)
-ToggleBtn.Size = UDim2.new(0, 160, 0, 40)
-ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.Text = "BẬT FLY"
-ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleBtn.TextSize = 16
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Parent = MainFrame
+    Title.BackgroundColor3 = Color3.fromRGB(0, 120, 90)
+    Title.Size = UDim2.new(0, 200, 0, 30)
+    Title.Font = Enum.Font.GothamBold
+    Title.Text = "FLY OR DIE V2"
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextSize = 14
 
-local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Name = "SpeedLabel"
-SpeedLabel.Parent = MainFrame
-SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.Position = UDim2.new(0.1, 0, 0.6, 0)
-SpeedLabel.Size = UDim2.new(0, 80, 0, 20)
-SpeedLabel.Font = Enum.Font.Gotham
-SpeedLabel.Text = "Tốc độ:"
-SpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+    local ToggleBtn = Instance.new("TextButton")
+    ToggleBtn.Name = "ToggleBtn"
+    ToggleBtn.Parent = MainFrame
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 80)
+    ToggleBtn.Position = UDim2.new(0.1, 0, 0.25, 0)
+    ToggleBtn.Size = UDim2.new(0, 160, 0, 40)
+    ToggleBtn.Font = Enum.Font.GothamBold
+    ToggleBtn.Text = "BẬT FLY"
+    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleBtn.TextSize = 16
 
-local SpeedBox = Instance.new("TextBox")
-SpeedBox.Name = "SpeedBox"
-SpeedBox.Parent = MainFrame
-SpeedBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-SpeedBox.Position = UDim2.new(0.55, 0, 0.6, 0)
-SpeedBox.Size = UDim2.new(0, 60, 0, 20)
-SpeedBox.Font = Enum.Font.Gotham
-SpeedBox.Text = tostring(Speed)
-SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedBox.ClearTextOnFocus = false
+    local SpeedLabel = Instance.new("TextLabel")
+    SpeedLabel.Name = "SpeedLabel"
+    SpeedLabel.Parent = MainFrame
+    SpeedLabel.BackgroundTransparency = 1
+    SpeedLabel.Position = UDim2.new(0.1, 0, 0.6, 0)
+    SpeedLabel.Size = UDim2.new(0, 80, 0, 20)
+    SpeedLabel.Font = Enum.Font.Gotham
+    SpeedLabel.Text = "Tốc độ:"
+    SpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Name = "StatusLabel"
-StatusLabel.Parent = MainFrame
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Position = UDim2.new(0.1, 0, 0.8, 0)
-StatusLabel.Size = UDim2.new(0, 160, 0, 20)
-StatusLabel.Font = Enum.Font.Gotham
-StatusLabel.Text = "Trạng thái: TẮT"
-StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
-StatusLabel.TextSize = 14
+    local SpeedBox = Instance.new("TextBox")
+    SpeedBox.Name = "SpeedBox"
+    SpeedBox.Parent = MainFrame
+    SpeedBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    SpeedBox.Position = UDim2.new(0.55, 0, 0.6, 0)
+    SpeedBox.Size = UDim2.new(0, 60, 0, 20)
+    SpeedBox.Font = Enum.Font.Gotham
+    SpeedBox.Text = tostring(Speed)
+    SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SpeedBox.ClearTextOnFocus = false
+
+    local StatusLabel = Instance.new("TextLabel")
+    StatusLabel.Name = "StatusLabel"
+    StatusLabel.Parent = MainFrame
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.Position = UDim2.new(0.1, 0, 0.8, 0)
+    StatusLabel.Size = UDim2.new(0, 160, 0, 20)
+    StatusLabel.Font = Enum.Font.Gotham
+    StatusLabel.Text = "Trạng thái: TẮT"
+    StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+    StatusLabel.TextSize = 14
+
+    return {
+        ToggleBtn = ToggleBtn,
+        SpeedBox = SpeedBox,
+        StatusLabel = StatusLabel
+    }
+end
+
+-- Khởi tạo GUI
+local GUI = CreateGUI()
 
 -- Hàm bật fly (giữ nguyên cơ chế của bạn)
 local function StartFly()
@@ -102,11 +119,11 @@ local function StartFly()
     end
     
     isFlying = true
-    ToggleBtn.Text = "TẮT FLY"
-    StatusLabel.Text = "Trạng thái: BẬT"
-    StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
+    GUI.ToggleBtn.Text = "TẮT FLY"
+    GUI.StatusLabel.Text = "Trạng thái: BẬT"
+    GUI.StatusLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
     
-    -- Kết nối sự kiện bay (giữ nguyên cơ chế của bạn)
+    -- Kết nối sự kiện bay
     flyConnection = RunService.RenderStepped:Connect(function()
         if not isFlying or not HRP or not FlyForce then return end
         
@@ -151,13 +168,13 @@ local function StopFly()
         end
     end
     
-    ToggleBtn.Text = "BẬT FLY"
-    StatusLabel.Text = "Trạng thái: TẮT"
-    StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+    GUI.ToggleBtn.Text = "BẬT FLY"
+    GUI.StatusLabel.Text = "Trạng thái: TẮT"
+    GUI.StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
 end
 
 -- Xử lý sự kiện GUI
-ToggleBtn.MouseButton1Click:Connect(function()
+GUI.ToggleBtn.MouseButton1Click:Connect(function()
     if isFlying then
         StopFly()
     else
@@ -165,12 +182,12 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-SpeedBox.FocusLost:Connect(function()
-    local newSpeed = tonumber(SpeedBox.Text)
+GUI.SpeedBox.FocusLost:Connect(function()
+    local newSpeed = tonumber(GUI.SpeedBox.Text)
     if newSpeed and newSpeed > 0 and newSpeed <= 500 then
         Speed = newSpeed
     else
-        SpeedBox.Text = tostring(Speed)
+        GUI.SpeedBox.Text = tostring(Speed)
     end
 end)
 
