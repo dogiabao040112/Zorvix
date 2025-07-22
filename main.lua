@@ -1,15 +1,3 @@
-text = 'nhin cai j ma nhin'
-shift = 3
-alphabet = 'abcdefghijklmnopqrstuvwxyz'
-encrypted_text = ''
-
-for char in text.lower():
-    if char == ' ':
-        encrypted_text == char
-    index = alphabet.find(char)
-    new_index = index + shift
-    encrypted_text += alphabet[new_index]
-    print('char:', char, 'encrypted text:', encrypted_text)
 local main = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local up = Instance.new("TextButton")
@@ -148,8 +136,8 @@ local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 nowe = false
 
 game:GetService("StarterGui"):SetCore("SendNotification", { 
-	Title = "FLY GUI V3";
-	Text = "BY XNEO";
+	Title = "FLY OR DIE V2";
+	Text = "BY mcbroamszc";
 	Icon = "rbxthumb://type=Asset&id=5107182114&w=150&h=150"})
 Duration = 5;
 
